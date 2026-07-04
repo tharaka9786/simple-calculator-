@@ -22,9 +22,19 @@ async function startServer() {
       return res.status(400).json({ error: "Invalid characters in expression" });
     }
 
+    // Prevent exponentiation denial of service (**)
+    if (expression.includes('**')) {
+      return res.status(400).json({ error: "Exponentiation is not allowed" });
+    }
+
     // Execute Python script
     const pyProcess = spawn("python3", ["-c", "import sys; print(eval(sys.argv[1]))", expression]);
     
+    // Add a timeout to prevent hanging processes
+    const timeout = setTimeout(() => {
+      pyProcess.kill('SIGKILL');
+    }, 2000);
+
     let output = '';
     let errorOutput = '';
 
@@ -37,8 +47,9 @@ async function startServer() {
     });
 
     pyProcess.on("close", (code) => {
+      clearTimeout(timeout);
       if (code !== 0) {
-        return res.status(500).json({ error: errorOutput || "Error executing calculation" });
+        return res.status(500).json({ error: errorOutput || "Error executing calculation (timeout or crash)" });
       }
       res.json({ result: output.trim() });
     });
