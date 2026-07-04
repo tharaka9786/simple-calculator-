@@ -31,11 +31,17 @@ export default function App() {
         },
         body: JSON.stringify({ expression }),
       });
-      const data = await res.json();
-      
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to calculate');
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to calculate');
+        } else {
+          throw new Error(`Server error: ${res.status} ${res.statusText}`);
+        }
       }
+
+      const data = await res.json();
       
       setResult(data.result);
     } catch (err: any) {
