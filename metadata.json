@@ -1,0 +1,6 @@
+{
+  "name": "Python Calculator",
+  "description": "A simple calculator using a Python backend.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
